@@ -79,7 +79,6 @@ ul {
   padding: 0;
 }
 li {
-  /*display: inline-block;*/
   margin: 0;
   width: 80px;
   height: 80px;
@@ -104,6 +103,7 @@ a {
 .gameboard {
   display: flex;
   justify-content: center;
+  width: 100%;
 }
 svg.red circle {
   stroke: red;
@@ -112,5 +112,12 @@ svg.red circle {
 svg.yellow circle {
   stroke: yellow;
   fill: yellow;
+}
+/* Small screens */
+@media screen and (max-width: 500px) {
+  li {
+    width: 45px;
+    height: 45px;
+  } 
 }
 </style>
