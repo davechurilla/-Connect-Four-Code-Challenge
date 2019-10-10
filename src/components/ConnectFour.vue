@@ -70,9 +70,9 @@ export default {
 h1, h2 {
   font-weight: normal;
   user-select: none;
-  -webkit-user-select: none; /* Chrome/Safari */        
+  -webkit-user-select: none; /* Chrome/Safari */
   -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+ */  
+  -ms-user-select: none; /* IE10+ */
 }
 ul {
   list-style-type: none;
