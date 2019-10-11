@@ -11,7 +11,7 @@ new Vue({
   el: '#app',
   // The connect four state of the game is represented as a two dimensional array. After every turn, this state is updated.
   props: {
-    initGrid: [], row: Number, col: Number
+    initGrid: []
   },
   components: { App },
   template: '<App/>'

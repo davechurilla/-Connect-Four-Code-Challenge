@@ -1,11 +1,11 @@
 <template>
-  <div class="hello">
+  <div class="connect-four">
     <h1>{{ msg }}</h1>
     <ul class="gameboard">
-      <li v-for="(col, index) in cols" :key="index" class="col" :class="`${index}`">
-        <ul class="column">
-          <li v-for="(row, index) in rows" :key="index" class="row" :class="`${indexReverse(index, (rows - 1))}`">
-            <svg height="100%" width="100%" @click.stop.prevent="swichColor" :class="{'red': isRed, 'yellow': isYellow }">
+      <li v-for="(col, index) in cols" :key="index" class="col" :class="{'active': isActive}">
+        <ul class="column" :class="[`column${index}`]" :data-value="[`${index}`]" @click.stop="playTurn($event)">
+          <li v-for="(row, index) in rows" :key="index" class="row" :class="`row${indexReverse(index, (rows - 1))}`">
+            <svg height="100%" width="100%" :class="{'red': isRed, 'yellow': isYellow }">
               <circle cx="50%" cy="50%" r="45%" stroke-width="1" />
             </svg>
           </li>
@@ -26,34 +26,66 @@ export default {
       game_state: [],
       isGridInit: false,
       isYellow: false,
-      isRed: true
+      isRed: true,
+      isActive: false,
+      currentPlay: {
+        color: String,
+        rowNum: Number,
+        colNum: Number
+      }
     }
   },
   mounted: function () {
     let vm = this
     function setGrid () {
-      let thisGrid = [['', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', ''],
-        ['', '', '', '', '', '', '']]
+      const thisGrid = new Array(7).fill(0).map(() => new Array(6).fill(0))
       vm.isGridInit = true
       return thisGrid
     }
     if (!this.gridInit) {
       this.initGrid = setGrid()
       this.game_state = this.initGrid
-      // console.log(this.game_state)
     }
   },
   methods: {
     indexReverse: function (index, count) {
       return Math.abs(index - count)
     },
-    swichColor: function () {
+    playTurn: function (event) {
+      event.currentTarget.classList.toggle('active')
+      const targetCol = event.currentTarget.dataset.value
+      this.currentPlay.colNum = targetCol
+      let targetColArr = this.game_state[targetCol]
+
+      for (var i = 0; i < targetColArr.length; i++) {
+        if (targetColArr[i] === 0 || null) {
+          this.currentPlay.rowNum = i
+          if (this.isRed) {
+            targetColArr[i] = 'r'
+            this.currentPlay.color = 'red'
+            this.changeTurn()
+            console.log(this.game_state)
+            return
+          } else if (this.isYellow) {
+            targetColArr[i] = 'y'
+            this.currentPlay.color = 'yellow'
+            this.changeTurn()
+            console.log(this.game_state)
+            return
+          }
+        }
+      }
+      console.log(this.currentPlay)
+    },
+    changeTurn: function () {
       this.isYellow = !this.isYellow
       this.isRed = !this.isRed
+      console.log(this.currentPlay)
+      const rowEl = '.row' + this.currentPlay.rowNum
+      const colEl = '.column' + this.currentPlay.colNum
+      let selector = document.querySelector(colEl + ' ' + rowEl)
+      selector.classList.add('active')
+      // .classList.toggle('active')
     }
   },
   computed: {
@@ -61,6 +93,9 @@ export default {
   },
   watch: {
 
+  },
+  updated: function () {
+    console.log('the action is go')
   }
 }
 </script>
@@ -78,7 +113,7 @@ ul {
   list-style-type: none;
   padding: 0;
 }
-li {
+li.row {
   margin: 0;
   width: 80px;
   height: 80px;
@@ -96,6 +131,9 @@ li.row:first-child {
 }
 li.row:last-child {
   border-bottom: 2px solid blue;
+}
+.column.active li.row {
+  background: #fff;
 }
 a {
   color: #42b983;
@@ -118,6 +156,6 @@ svg.yellow circle {
   li {
     width: 45px;
     height: 45px;
-  } 
+  }
 }
 </style>
