@@ -3,7 +3,7 @@
     <h1>{{ msg }}</h1>
     <ul class="gameboard">
       <li v-for="(col, index) in cols" :key="index" class="col" :class="{'active': isActive}">
-        <ul class="column" :class="[`column${index}`]" :data-value="[`${index}`]" @click.stop="playTurn($event)">
+        <ul class="column" :class="[`column${index}`]" :data-value="[`${index}`]" @click="!gameOver ? { click:playTurn($event) } : {}">
           <li v-for="(row, index) in rows" :key="index" class="row" :class="`row${indexReverse(index, (rows - 1))}`">
             <svg height="100%" width="100%" :class="{'red': isRed, 'yellow': isYellow }">
               <circle cx="50%" cy="50%" r="45%" stroke-width="1" />
@@ -31,8 +31,10 @@ export default {
       currentPlay: {
         color: String,
         rowNum: Number,
-        colNum: Number
-      }
+        colNum: Number,
+        consoleMsg: Function
+      },
+      gameOver: false
     }
   },
   mounted: function () {
@@ -52,7 +54,7 @@ export default {
       return Math.abs(index - count)
     },
     playTurn: function (event) {
-      event.currentTarget.classList.toggle('active')
+      // event.currentTarget.classList.toggle('active')
       const targetCol = event.currentTarget.dataset.value
       this.currentPlay.colNum = targetCol
       let targetColArr = this.game_state[targetCol]
@@ -80,19 +82,25 @@ export default {
     changeTurn: function () {
       this.isYellow = !this.isYellow
       this.isRed = !this.isRed
-      console.log(this.currentPlay)
       const rowEl = '.row' + this.currentPlay.rowNum
       const colEl = '.column' + this.currentPlay.colNum
-      let selector = document.querySelector(colEl + ' ' + rowEl)
+      const selector = document.querySelector(colEl + ' ' + rowEl)
+      const elColor = this.currentPlay.color
       selector.classList.add('active')
-      // .classList.toggle('active')
+      selector.classList.add(elColor)
     }
   },
   computed: {
-
+    //   return this.currentPlay.consoleMsg = function () {
+    //     console.log('the action is go')
+    // }
   },
   watch: {
-
+    playUpdate: function () {
+      return this.currentPlay.consoleMsg = function () {
+        console.log('the action is go')
+      }
+    }
   },
   updated: function () {
     console.log('the action is go')
@@ -143,17 +151,23 @@ a {
   justify-content: center;
   width: 100%;
 }
-svg.red circle {
+li svg {
+  display: none;
+}
+li.active svg {
+  display: inline;
+}
+li.active.red svg circle {
   stroke: red;
   fill: red;
 }
-svg.yellow circle {
+li.active.yellow svg circle {
   stroke: yellow;
   fill: yellow;
 }
 /* Small screens */
 @media screen and (max-width: 500px) {
-  li {
+  li.row {
     width: 45px;
     height: 45px;
   }
