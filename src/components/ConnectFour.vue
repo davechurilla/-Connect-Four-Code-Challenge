@@ -5,14 +5,15 @@
       <li v-for="(col, index) in cols" :key="index" class="col">
         <ul class="column" :class="[`column${index}`]" :data-value="[`${index}`]" @click="!gameOver ? { click:playTurn($event) } : {}">
           <li v-for="(row, index) in rows" :key="index" class="row" :class="`row${indexReverse(index, (rows - 1))}`">
-            <svg height="100%" width="100%" :class="{'red': isRed, 'yellow': isYellow }">
+            <svg height="100%" width="100%">
               <circle cx="50%" cy="50%" r="45%" stroke-width="1" />
             </svg>
           </li>
         </ul>
       </li>
     </ul>
-    <button @click="startOver()">Start Game Over</button>
+    <caption :class="{'red': isRed, 'yellow': isYellow }"></caption>
+    <button @click.stop.prevent="startOver()" :class="{'gameover': gameOver}" >Start Game Over</button>
   </div>
 </template>
 
@@ -35,6 +36,8 @@ export default {
         colNum: Number,
         colPlayed: Array,
         rowPlayed: Array,
+        rightDiagPlayed: Array,
+        leftDiagPlayed: Array,
         consoleMsg: String
       },
       gameOver: false
@@ -45,7 +48,6 @@ export default {
     if (!this.gridInit) {
       this.initGrid = this.setGrid()
       this.game_state = this.initGrid
-      console.log(this.game_state)
       vm.isGridInit = true
     }
   },
@@ -58,9 +60,8 @@ export default {
       return Math.abs(index - count)
     },
     playTurn: function (event) {
-      // event.currentTarget.classList.toggle('active')
       const targetCol = event.currentTarget.dataset.value
-      this.currentPlay.colNum = targetCol
+      this.currentPlay.colNum = parseInt(targetCol)
       let targetColArr = this.game_state[targetCol]
 
       for (var i = 0; i < targetColArr.length; i++) {
@@ -69,16 +70,14 @@ export default {
           if (this.isRed) {
             targetColArr[i] = 'r'
             this.currentPlay.color = 'red'
-            this.changeTurn(targetColArr)
-            this.getRowArray()
-            // console.log(this.game_state)
+            this.changeTurn()
+            console.log(this.game_state)
             return
           } else if (this.isYellow) {
             targetColArr[i] = 'y'
             this.currentPlay.color = 'yellow'
-            this.changeTurn(targetColArr)
-            this.getRowArray()
-            // console.log(this.game_state)
+            this.changeTurn()
+            console.log(this.game_state)
             return
           } else {
             // invalid move method
@@ -87,55 +86,116 @@ export default {
           // out of moves, column full
         }
       }
-      // console.log(this.currentPlay)
     },
-    changeTurn: function (col) {
-      // if (!this.checkFourCol()) {
+    changeTurn: function () {
+      this.updateArrays()
+      // this.currentPlay.colPlayed = col
       this.isYellow = !this.isYellow
       this.isRed = !this.isRed
       const selector = document.querySelector(this.selector)
       const elColor = this.currentPlay.color
       selector.classList.add('active')
       selector.classList.add(elColor)
-      this.currentPlay.colPlayed = col
-      // console.log(this.currentPlay.colPlayed)
-      // playUpdate()
+    },
+    getColArray: function () {
+      const gameState = this.game_state
+      const colNumPlay = parseInt(this.currentPlay.colNum)
+      let colPlayedArr = []
+      colPlayedArr = gameState[colNumPlay]
+      this.currentPlay.colPlayed = colPlayedArr
     },
     getRowArray: function () {
       const gameState = this.game_state
-      const rowNumPlay = this.currentPlay.rowNum
+      const rowNumPlay = parseInt(this.currentPlay.rowNum)
       let rowPlayedArr = []
       gameState.map(item => {
         rowPlayedArr.push(item[rowNumPlay])
       })
       this.currentPlay.rowPlayed = rowPlayedArr
-      // return console.log(this.currentPlay.rowPlayed)
+    },
+    getRightDiagArray: function () {
+      const gameState = this.game_state
+      let rowNumPlay = parseInt(this.currentPlay.rowNum)
+      let colNumPlay = parseInt(this.currentPlay.colNum)
+      if (rowNumPlay > colNumPlay) {
+        rowNumPlay -= colNumPlay
+        colNumPlay -= colNumPlay
+      } else {
+        colNumPlay -= rowNumPlay
+        rowNumPlay -= rowNumPlay
+      }
+      let rightDiagArr = []
+      gameState[colNumPlay].map(item => {
+        while (rowNumPlay < 6 && colNumPlay < 7) {
+          rightDiagArr.push((gameState[colNumPlay][rowNumPlay]))
+          rowNumPlay++
+          colNumPlay++
+        }
+      })
+      this.currentPlay.rightDiagPlayed = rightDiagArr
+    },
+    getLeftDiagArray: function () {
+      const gameState = this.game_state
+      let rowNumPlay = parseInt(this.currentPlay.rowNum)
+      let colNumPlay = parseInt(this.currentPlay.colNum)
+      colNumPlay += rowNumPlay
+      rowNumPlay -= rowNumPlay
+      if (colNumPlay > 6) colNumPlay = 6
+      let leftDiagArr = []
+      gameState[colNumPlay].map(item => {
+        while (rowNumPlay < 6 && colNumPlay >= 0) {
+          leftDiagArr.push((gameState[colNumPlay][rowNumPlay]))
+          rowNumPlay++
+          colNumPlay--
+        }
+      })
+      this.currentPlay.leftDiagPlayed = leftDiagArr
+    },
+    updateArrays: function () {
+      this.getColArray()
+      this.getRowArray()
+      this.getRightDiagArray()
+      this.getLeftDiagArray()
     },
     checkForFour: function (array) {
       return array.some(function (a, i, aa) {
-        return i > 1 && a === aa[i - 3] && a === aa[i - 2] && a === aa[i - 1] && a !== ''
+        return i > 1 && a === aa[i - 3] && a === aa[i - 2] && a === aa[i - 1] && a !== '' && a !== undefined
       })
     },
     checkForWinner: function () {
-      // console.log(this.checkForFour(this.currentPlay.colPlayed))
-      let colWinner =  this.checkForFour(this.currentPlay.colPlayed)
-      let rowWinner =  this.checkForFour(this.currentPlay.rowPlayed)
-      console.log(colWinner)
-      console.log(rowWinner)
-      let winner = colWinner || rowWinner
-      return winner
-      // if (colWinner || rowWinner) return console.log('winner')
+      let colWinner = this.checkForFour(this.currentPlay.colPlayed)
+      let rowWinner = this.checkForFour(this.currentPlay.rowPlayed)
+      let rightDiagWinner = this.checkForFour(this.currentPlay.rightDiagPlayed)
+      let leftDiagWinner = this.checkForFour(this.currentPlay.leftDiagPlayed)
+      let winner = colWinner || rowWinner || rightDiagWinner || leftDiagWinner
+      if(winner) this.gameIsOver(); return winner
+    },
+    gameIsOver: function () {
+      this.gameOver = true
+      let winner = false
+    },
+    updateBoard: function () {
+      let elements = document.getElementsByClassName("row");
+      elements = Array.from(elements); //convert to array
+      elements.map(element =>
+        ({
+          class: element.classList.remove('active'),
+          class: element.classList.remove('red'),
+          class: element.classList.remove('yellow')            
+        })
+      )
     },
     startOver: function () {
       this.initGrid = this.setGrid()
       this.game_state = this.initGrid
+      this.currentPlay.colPlayed = []
+      this.currentPlay.rowPlayed = []
+      this.currentPlay.rightDiagPlayed = []
+      this.currentPlay.leftDiagPlayed = []
       this.gameOver = false
-      const checker = document.querySelector('li.active')
-      checker.classList.remove('active')
+      this.updateBoard()
       this.isRed = true
       this.isYellow = false
-      this.isActive = false
-      // console.log(this.game_state)
     }
   },
   computed: {
@@ -147,11 +207,11 @@ export default {
 
   },
   updated: function () {
-    console.log('the action is go')
-      if (this.checkForWinner()) {
-        this.gameOver = true
-        console.log('Game over = ' + this.gameOver)
-      }    
+    if (this.checkForWinner()) {
+      console.log('Game over = ' + this.gameOver)
+    } else {
+      console.log('the action is go')
+    }
   }
 }
 </script>
