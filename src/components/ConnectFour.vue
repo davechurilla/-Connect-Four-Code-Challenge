@@ -2,7 +2,7 @@
   <div class="connect-four">
     <h1>{{ msg }}</h1>
     <ul class="gameboard">
-      <li v-for="(col, index) in cols" :key="index" class="col" :class="{'active': isActive}">
+      <li v-for="(col, index) in cols" :key="index" class="col">
         <ul class="column" :class="[`column${index}`]" :data-value="[`${index}`]" @click="!gameOver ? { click:playTurn($event) } : {}">
           <li v-for="(row, index) in rows" :key="index" class="row" :class="`row${indexReverse(index, (rows - 1))}`">
             <svg height="100%" width="100%" :class="{'red': isRed, 'yellow': isYellow }">
@@ -12,6 +12,7 @@
         </ul>
       </li>
     </ul>
+    <button @click="startOver()">Start Game Over</button>
   </div>
 </template>
 
@@ -25,31 +26,34 @@ export default {
       rows: 6,
       game_state: [],
       isGridInit: false,
-      isYellow: false,
-      isRed: true,
+      isYellow: false, // determine's which player's turn it is
+      isRed: true, // determine's which player's turn it is
       isActive: false,
       currentPlay: {
         color: String,
         rowNum: Number,
         colNum: Number,
-        consoleMsg: Function
+        colPlayed: Array,
+        rowPlayed: Array,
+        consoleMsg: String
       },
       gameOver: false
     }
   },
   mounted: function () {
     let vm = this
-    function setGrid () {
-      const thisGrid = new Array(7).fill(0).map(() => new Array(6).fill(0))
-      vm.isGridInit = true
-      return thisGrid
-    }
     if (!this.gridInit) {
-      this.initGrid = setGrid()
+      this.initGrid = this.setGrid()
       this.game_state = this.initGrid
+      console.log(this.game_state)
+      vm.isGridInit = true
     }
   },
   methods: {
+    setGrid: function () {
+      const thisGrid = new Array(7).fill('').map(() => new Array(6).fill(''))
+      return thisGrid
+    },
     indexReverse: function (index, count) {
       return Math.abs(index - count)
     },
@@ -60,50 +64,94 @@ export default {
       let targetColArr = this.game_state[targetCol]
 
       for (var i = 0; i < targetColArr.length; i++) {
-        if (targetColArr[i] === 0 || null) {
+        if (targetColArr[i] === '') {
           this.currentPlay.rowNum = i
           if (this.isRed) {
             targetColArr[i] = 'r'
             this.currentPlay.color = 'red'
-            this.changeTurn()
-            console.log(this.game_state)
+            this.changeTurn(targetColArr)
+            this.getRowArray()
+            // console.log(this.game_state)
             return
           } else if (this.isYellow) {
             targetColArr[i] = 'y'
             this.currentPlay.color = 'yellow'
-            this.changeTurn()
-            console.log(this.game_state)
+            this.changeTurn(targetColArr)
+            this.getRowArray()
+            // console.log(this.game_state)
             return
+          } else {
+            // invalid move method
           }
+        } else {
+          // out of moves, column full
         }
       }
-      console.log(this.currentPlay)
+      // console.log(this.currentPlay)
     },
-    changeTurn: function () {
+    changeTurn: function (col) {
+      // if (!this.checkFourCol()) {
       this.isYellow = !this.isYellow
       this.isRed = !this.isRed
-      const rowEl = '.row' + this.currentPlay.rowNum
-      const colEl = '.column' + this.currentPlay.colNum
-      const selector = document.querySelector(colEl + ' ' + rowEl)
+      const selector = document.querySelector(this.selector)
       const elColor = this.currentPlay.color
       selector.classList.add('active')
       selector.classList.add(elColor)
+      this.currentPlay.colPlayed = col
+      // console.log(this.currentPlay.colPlayed)
+      // playUpdate()
+    },
+    getRowArray: function () {
+      const gameState = this.game_state
+      const rowNumPlay = this.currentPlay.rowNum
+      let rowPlayedArr = []
+      gameState.map(item => {
+        rowPlayedArr.push(item[rowNumPlay])
+      })
+      this.currentPlay.rowPlayed = rowPlayedArr
+      // return console.log(this.currentPlay.rowPlayed)
+    },
+    checkForFour: function (array) {
+      return array.some(function (a, i, aa) {
+        return i > 1 && a === aa[i - 3] && a === aa[i - 2] && a === aa[i - 1] && a !== ''
+      })
+    },
+    checkForWinner: function () {
+      // console.log(this.checkForFour(this.currentPlay.colPlayed))
+      let colWinner =  this.checkForFour(this.currentPlay.colPlayed)
+      let rowWinner =  this.checkForFour(this.currentPlay.rowPlayed)
+      console.log(colWinner)
+      console.log(rowWinner)
+      let winner = colWinner || rowWinner
+      return winner
+      // if (colWinner || rowWinner) return console.log('winner')
+    },
+    startOver: function () {
+      this.initGrid = this.setGrid()
+      this.game_state = this.initGrid
+      this.gameOver = false
+      const checker = document.querySelector('li.active')
+      checker.classList.remove('active')
+      this.isRed = true
+      this.isYellow = false
+      this.isActive = false
+      // console.log(this.game_state)
     }
   },
   computed: {
-    //   return this.currentPlay.consoleMsg = function () {
-    //     console.log('the action is go')
-    // }
+    selector: function () {
+      return '.column' + this.currentPlay.colNum + ' ' + '.row' + this.currentPlay.rowNum
+    }
   },
   watch: {
-    playUpdate: function () {
-      return this.currentPlay.consoleMsg = function () {
-        console.log('the action is go')
-      }
-    }
+
   },
   updated: function () {
     console.log('the action is go')
+      if (this.checkForWinner()) {
+        this.gameOver = true
+        console.log('Game over = ' + this.gameOver)
+      }    
   }
 }
 </script>
