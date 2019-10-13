@@ -13,7 +13,7 @@
       </li>
     </ul>
     <caption :class="{'red': isRed, 'yellow': isYellow }"></caption>
-    <button @click.stop.prevent="startOver()" :class="{'gameover': gameOver}" >Start Game Over</button>
+    <button @click.stop.prevent="startOver()" :class="{'gameover': gameOver, 'nodisplay': nodisplay}" >Start Game Over</button>
   </div>
 </template>
 
@@ -40,7 +40,8 @@ export default {
         leftDiagPlayed: Array,
         consoleMsg: String
       },
-      gameOver: false
+      gameOver: false,
+      nodisplay: true
     }
   },
   mounted: function () {
@@ -140,7 +141,13 @@ export default {
       let colNumPlay = parseInt(this.currentPlay.colNum)
       colNumPlay += rowNumPlay
       rowNumPlay -= rowNumPlay
-      if (colNumPlay > 6) colNumPlay = 6
+      if (colNumPlay > 6) {
+        const remainder = colNumPlay - 6
+        colNumPlay -= remainder
+        rowNumPlay += remainder
+      }
+      console.log(colNumPlay)
+      console.log(rowNumPlay)
       let leftDiagArr = []
       gameState[colNumPlay].map(item => {
         while (rowNumPlay < 6 && colNumPlay >= 0) {
@@ -150,6 +157,7 @@ export default {
         }
       })
       this.currentPlay.leftDiagPlayed = leftDiagArr
+      console.log(leftDiagArr)
     },
     updateArrays: function () {
       this.getColArray()
@@ -168,20 +176,18 @@ export default {
       let rightDiagWinner = this.checkForFour(this.currentPlay.rightDiagPlayed)
       let leftDiagWinner = this.checkForFour(this.currentPlay.leftDiagPlayed)
       let winner = colWinner || rowWinner || rightDiagWinner || leftDiagWinner
-      if(winner) this.gameIsOver(); return winner
+      if (winner) this.gameIsOver(); return winner
     },
     gameIsOver: function () {
       this.gameOver = true
-      let winner = false
+      this.nodisplay = false
     },
     updateBoard: function () {
-      let elements = document.getElementsByClassName("row");
-      elements = Array.from(elements); //convert to array
+      let elements = document.getElementsByClassName('row')
+      elements = Array.from(elements) // convert to array
       elements.map(element =>
         ({
-          class: element.classList.remove('active'),
-          class: element.classList.remove('red'),
-          class: element.classList.remove('yellow')            
+          class: element.classList.remove('active', 'red', 'yellow')
         })
       )
     },
@@ -193,6 +199,7 @@ export default {
       this.currentPlay.rightDiagPlayed = []
       this.currentPlay.leftDiagPlayed = []
       this.gameOver = false
+      this.nodisplay = true
       this.updateBoard()
       this.isRed = true
       this.isYellow = false
@@ -258,6 +265,12 @@ a {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+button.nodisplay {
+  display: none;
+}
+.gameover {
+  display: inline;
 }
 li svg {
   display: none;
