@@ -70,7 +70,7 @@ Write a method which, given a game state, returns which player is
 supposed to play next. The return value is a string,
 either "y" (for the yellow player) or "r" (for the red player).
 
-I actually used a combination of a method called changeTurn, data properties isRed and isYellow, and Vue's 'updated' lifecycle hook to handle this. When the player takes their turn and the game_state data is updated, the method is called, and each data property is toggled from true to false. The data properties are how the current player's turn is determined and not  necessarily a method. Seemed a little simpler, and it was a good opportumity to take advantage of Vue's cool lifecycle hooks.
+I actually used a combination of a method called changeTurn, data properties isRed and isYellow, and Vue's 'updated' lifecycle hook to handle this. When the player takes their turn and the game_state data is updated, the method is called, and each data property is toggled from true to false. The data properties are how the current player's turn is determined and not  necessarily a method. Seemed a little simpler, and it was a good opportunity to take advantage of Vue's cool lifecycle hooks.
 
 ```python
 >>> get_current_player(game_state)
