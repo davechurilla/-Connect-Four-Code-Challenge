@@ -51,7 +51,7 @@ export default {
       cols: 7,
       rows: 6,
       game_state: [], // main data array of the game board, updated on each turn
-      playCount: 1, // counts up the number of plays in a game; used to determine a draw
+      playCount: 0, // counts up the number of plays in a game; used to determine a draw
       isGridInit: false, // used to confirm initial array setup of game_state
       isYellow: false, // determines yellow player's turn
       isRed: true, // determines red player's turn
@@ -133,6 +133,7 @@ export default {
     // checker displays on the board in the correct position
     changeTurn: function () {
       this.updateArrays()
+      this.playCount++
       this.isYellow = !this.isYellow
       this.isRed = !this.isRed
       const selector = document.querySelector(this.selector)
@@ -232,7 +233,6 @@ export default {
           if ((value !== '') && (this.playCount >= 42)) this.gameIsOver('draw')
         })
       })
-      this.playCount++
     },
     // triggered on win or draw with unique messaging for each depending on condition of win or draw
     gameIsOver: function (cond) {
