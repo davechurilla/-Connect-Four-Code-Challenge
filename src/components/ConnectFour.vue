@@ -19,25 +19,25 @@
     </div>
     <!-- this entire block is a conditional v-if switching between gameplay and game ending, dependent on gameOver boolean -->
     <div class="game-status">
-      <!-- conditions of either a win or draw will set isWin or isDraw data to true and display expected message --> 
+      <!-- conditions of either a win or draw will set isWin or isDraw data to true and display expected message -->
       <div v-if="gameOver">
         <!-- win messaging -->
-        <h3 v-if="isWin">Game is over. 
-          <span v-if="isYellow" :class="{'red': isRed, 'yellow': isYellow }"><strong class="red">RED</strong></span>
-          <span v-else :class="{'red': isRed, 'yellow': isYellow }"><strong class="yellow">YELLOW</strong></span>
-           is the winner!</h3>
+        <h3 v-if="isWin">Game is over.
+          <span v-if="isYellow" :class="{'red': isRed, 'yellow': isYellow }"><strong class="red"> RED </strong></span>
+          <span v-else :class="{'red': isRed, 'yellow': isYellow }"><strong class="yellow"> YELLOW </strong></span>
+          is the winner!</h3>
         <!-- messaging for when game is a draw -->
-        <h3 v-if="isDraw">Game is over and has ended in a draw.</h3>  
+        <h3 v-if="isDraw">Game is over and has ended in a draw.</h3>
         <p>Please play again by pressing the reset button below.</p>
         <!-- Start Over button -->
         <button @click.stop.prevent="startOver()"><strong>Start Game Over</strong></button>
       </div>
       <!-- at beginning of game and during gameplay, conditional rendering with a v-if that will switch between red and yellow player on each turn -->
-      <h3 v-else>Game is in session. It is the 
-        <span v-if="isRed" :class="{'red': isRed, 'yellow': isYellow }">RED</span>
-        <span v-else :class="{'red': isRed, 'yellow': isYellow }">YELLOW</span>
-        player's turn.<br />Please click a column above to drop a checker. 
-      </h3> 
+      <h3 v-else>Game is in session. It is the
+        <span v-if="isRed" :class="{'red': isRed, 'yellow': isYellow }"> RED </span>
+        <span v-else :class="{'red': isRed, 'yellow': isYellow }"> YELLOW </span>
+        player's turn.<br />Please click a column above to drop a checker.
+      </h3>
     </div>
   </div>
 </template>
@@ -50,15 +50,15 @@ export default {
       msg: 'Welcome to Connect Four!',
       cols: 7,
       rows: 6,
-      game_state: [], // main data array of the game board, updated on each turn 
-      playCount: 1, // counts up the number of plays in a game. used to determine a draw
-      isGridInit: false, // used to confirm initial array creat of game_state
-      isYellow: false, // determine's which player's turn it is
-      isRed: true, // determine's which player's turn it is
+      game_state: [], // main data array of the game board, updated on each turn
+      playCount: 1, // counts up the number of plays in a game; used to determine a draw
+      isGridInit: false, // used to confirm initial array setup of game_state
+      isYellow: false, // determines yellow player's turn
+      isRed: true, // determines red player's turn
       isActive: false, // utility on/off switch
-      isOverlay: false, // for invalid move when player tries to click full column
+      isOverlay: false, // set to true to display error on invalid move when player tries to click full column
       currentPlay: { // data used on each trun
-        color: String, // checker color 
+        color: String, // checker color
         rowNum: Number, // row position of checker
         colNum: Number, // column position of checker
         colPlayed: Array, // enter column array based on colNum
@@ -108,13 +108,11 @@ export default {
             targetColArr[i] = 'r'
             this.currentPlay.color = 'red'
             if (!this.gameOver) { this.changeTurn() }
-            console.log(this.game_state)
             return
           } else if (this.isYellow) {
             targetColArr[i] = 'y'
             this.currentPlay.color = 'yellow'
             if (!this.gameOver) { this.changeTurn() }
-            console.log(this.game_state)
             return
           }
         }
@@ -228,22 +226,20 @@ export default {
     },
     // if a winner is not returned true, this method will check to see if the game has resulted in a draw when data is updated
     checkForDraw: function (arr) {
-      console.log('checking for a draw')
       const gameState = arr
-      const draw = gameState.map(col => {
+      gameState.map(col => {
         col.map(value => {
-          if ((value !== '') && (this.playCount >= 42)) this.gameIsOver('draw');
+          if ((value !== '') && (this.playCount >= 42)) this.gameIsOver('draw')
         })
       })
       this.playCount++
-      console.log(this.playCount)
     },
-    // triggered of win or draw with unique messaging for each depending on win or draw
+    // triggered on win or draw with unique messaging for each depending on condition of win or draw
     gameIsOver: function (cond) {
       this.gameOver = true
       this.nodisplay = false
-      if (cond === 'win' ) this.isWin = true
-      if (cond === 'draw' ) this.isDraw = true  
+      if (cond === 'win') this.isWin = true
+      if (cond === 'draw') this.isDraw = true
     },
     // removes class names in the DOM for the checkers so the boeard is cleared when Start Game Over is pressed
     updateBoard: function () {
@@ -288,10 +284,10 @@ export default {
   updated: function () {
     if (this.checkForWinner()) {
       console.log('Game over = ' + this.gameOver)
-    } else if(this.checkForDraw(this.game_state)) {
+    } else if (this.checkForDraw(this.game_state)) {
       console.log('The game is a draw... ' + this.gameOver)
     } else {
-      console.log('the action is go')     
+      // console.log('the action is go')
     }
   }
 }
@@ -299,7 +295,7 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
+h1, h2, .game-status {
   font-weight: 600;
   user-select: none;
   -webkit-user-select: none; /* Chrome/Safari */
@@ -415,7 +411,7 @@ li.active.yellow svg circle {
   h3, p {
     margin: 0.25em;
     font-size: 1rem;
-  }  
+  }
   li.row {
     width: 45px;
     height: 45px;
